@@ -5,6 +5,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_core.tools import tool
 from langchain_core.messages import (
     BaseMessage,
     HumanMessage,
@@ -36,9 +37,16 @@ llm = ChatOpenAI(
 # Tools
 # ==========================================================
 
+@tool
+def date_and_time():
+    '''this tool will calculate current date and time'''
+    from datetime import datetime
+    current_dt = datetime.now()
+    return current_dt  # Output: 2026-08-02 12:00:00.000000
+
 search_tool = DuckDuckGoSearchRun()
 
-tools = [search_tool]
+tools = [search_tool,date_and_time]
 
 llm_with_tools = llm.bind_tools(tools)
 
@@ -53,7 +61,7 @@ def chat_node(state: AgentState):
 
     system_prompt = SystemMessage(
         content=(
-            "You are a martial arts instructor. "
+            "You are a research assistant. But you like to answer in rhyming couplets and rhyming iambic pentameter "
             "Answer the user's question. "
             "Use the search tool whenever current or factual information is needed."
         )
@@ -95,11 +103,14 @@ graph = builder.compile()
 
 if __name__ == "__main__":
 
+     
+    user_query = input("your question-->")
+
     result = graph.invoke(
         {
             "messages": [
                 HumanMessage(
-                    content="What is a machete? Can it be used for fighting?"
+                    content=user_query
                 )
             ]
         }
